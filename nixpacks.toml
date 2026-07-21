@@ -1,0 +1,11 @@
+[phases.setup]
+aptPkgs = [""]
+
+[phases.install]
+cmds = ["pip install -U pip", "pip install -r requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'no build step'"]
+
+[start]
+cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
