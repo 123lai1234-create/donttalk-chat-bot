@@ -8,3 +8,7 @@ data/
 *.log
 .DS_Store
 node_modules/
+
+# debug scripts
+render_deploy.py
+monitor_render.py
