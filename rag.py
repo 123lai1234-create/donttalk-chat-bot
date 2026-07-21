@@ -11,10 +11,30 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import httpx
-import chromadb
-from chromadb.config import Settings
 
 from config import config
+
+# chromadb is optional — only imported when RAG is actually used (and the
+# requirements file may not include it on free-tier deploys). This keeps
+# the service importable even if chromadb isn't installed.
+_chromadb = None
+_Settings = None
+
+
+def _ensure_chroma():
+    global _chromadb, _Settings
+    if _chromadb is None:
+        try:
+            import chromadb as _c
+            from chromadb.config import Settings as _S
+        except ImportError as e:
+            raise RuntimeError(
+                "chromadb is not installed; install it via `pip install chromadb` "
+                "to enable RAG. (or unset the dependency entirely if you only need fallback)"
+            ) from e
+        _chromadb = _c
+        _Settings = _S
+    return _chromadb, _Settings
 
 log = logging.getLogger("rag")
 
@@ -27,6 +47,7 @@ def _get_collection():
     if _collection is None:
         if not os.path.isdir(config.CHROMA_DIR):
             return None
+        chromadb, Settings = _ensure_chroma()
         _client = chromadb.PersistentClient(path=config.CHROMA_DIR, settings=Settings(anonymized_telemetry=False))
         _collection = _client.get_or_create_collection(
             name=f"{config.SITE_NAME}_pages",

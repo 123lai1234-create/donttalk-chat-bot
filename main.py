@@ -4,14 +4,27 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
+import sys
+import traceback
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from sse_starlette.sse import EventSourceResponse
+# Emit a startup marker IMMEDIATELY so we can see in Render logs whether
+# the process even reached __main__ vs. crashing during import.
+print(f"[startup] python={sys.version.split()[0]} pid={os.getpid()}", file=sys.stderr, flush=True)
+print(f"[startup] PORT={os.getenv('PORT', '(unset)')} cwd={os.getcwd()}", file=sys.stderr, flush=True)
 
-from agent import stream_chat
-from config import config
+try:
+    from fastapi import FastAPI, HTTPException
+    from fastapi.middleware.cors import CORSMiddleware
+    from pydantic import BaseModel, Field
+    from sse_starlette.sse import EventSourceResponse
+    from agent import stream_chat
+    from config import config
+    print("[startup] all imports ok", file=sys.stderr, flush=True)
+except Exception as e:
+    print(f"[startup][FATAL] import error: {e}", file=sys.stderr, flush=True)
+    traceback.print_exc(file=sys.stderr)
+    raise
 
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL.upper(), logging.INFO),
