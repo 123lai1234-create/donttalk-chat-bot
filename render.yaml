@@ -18,7 +18,9 @@ services:
         value: https://donttalk.vercel.app
       - key: SITE_NAME
         value: donttalk
+      # Both `donttalk` and `dontalk` aliases (Vercel keeps both pointed at the
+      # same deployment; chat panel lives at the current production hostname).
       - key: ALLOWED_ORIGINS
-        value: https://donttalk.vercel.app,http://localhost:4321
+        value: https://donttalk.vercel.app,https://dontalk.vercel.app,http://localhost:4321,http://localhost:8000
       - key: LOG_LEVEL
         value: INFO

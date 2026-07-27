@@ -17,11 +17,19 @@ class Config:
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
 
+    # ── CORS: accept both canonical aliases + local dev ───────────────────
+    # `donttalk.vercel.app` is the canonical / older alias; `dontalk.vercel.app`
+    # is the current production hostname. Both must be allowed or the browser
+    # blocks all preflight requests (rendered chat panel breaks).
+    _DEFAULT_ALLOWED_ORIGINS = (
+        "https://donttalk.vercel.app,"
+        "https://dontalk.vercel.app,"
+        "http://localhost:4321,"
+        "http://localhost:8000"
+    )
     ALLOWED_ORIGINS: list[str] = [
-        o.strip() for o in os.getenv(
-            "ALLOWED_ORIGINS",
-            "https://donttalk.vercel.app,http://localhost:4321",
-        ).split(",") if o.strip()
+        o.strip() for o in os.getenv("ALLOWED_ORIGINS", _DEFAULT_ALLOWED_ORIGINS).split(",")
+        if o.strip()
     ]
 
     CHROMA_DIR: str = os.getenv("CHROMA_DIR", "./data/chroma")
