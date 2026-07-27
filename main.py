@@ -56,6 +56,9 @@ async def healthz():
         "model": config.OPENAI_MODEL,
         "base_url": config.OPENAI_BASE_URL,
         "has_key": bool(config.OPENAI_API_KEY),
+        # DEBUG: surface runtime CORS state to diagnose dontalk.vercel.app rejection
+        "_debug_allowed_origins": list(config.ALLOWED_ORIGINS),
+        "_debug_env_var_raw": os.getenv("ALLOWED_ORIGINS", "(unset)"),
     }
 
 
