@@ -36,7 +36,18 @@ app = FastAPI(title=f"{config.SITE_NAME} Chat Bot", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.ALLOWED_ORIGINS,
+    # Hardcoded base + env-var union. The hardcoded list is the source of
+    # truth so render env-injection lag (env vars are baked at build time
+    # and don't propagate to the running process without a full rebuild)
+    # can never block a known-good origin.
+    allow_origins=list(dict.fromkeys(
+        [
+            "https://donttalk.vercel.app",
+            "https://dontalk.vercel.app",
+            "http://localhost:4321",
+            "http://localhost:8000",
+        ] + list(config.ALLOWED_ORIGINS)
+    )),
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -56,9 +67,6 @@ async def healthz():
         "model": config.OPENAI_MODEL,
         "base_url": config.OPENAI_BASE_URL,
         "has_key": bool(config.OPENAI_API_KEY),
-        # DEBUG: surface runtime CORS state to diagnose dontalk.vercel.app rejection
-        "_debug_allowed_origins": list(config.ALLOWED_ORIGINS),
-        "_debug_env_var_raw": os.getenv("ALLOWED_ORIGINS", "(unset)"),
     }
 
 
